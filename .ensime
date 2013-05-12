@@ -1,0 +1,37 @@
+;; If your project contains a lot of files, it is advisable to enable (:disable-source-load-on-startup t)
+;; Otherwise Ensime might incur a massive lag at startup time
+;; See more information about that at http://aemoncannon.github.com/ensime/index.html
+
+(
+  :subprojects (
+    (
+      :name "MitJustinBot"
+      :module-name "mitjustinbot"
+      :depends-on-modules (
+      
+      )
+      :package "com.jmcejuela.scalatron"
+      :version "0.0.1"
+      :compile-deps (
+        "/Users/jast/.sbt/boot/scala-2.10.1/lib/scala-library.jar"
+      )
+      :runtime-deps (
+        "/Users/jast/.sbt/boot/scala-2.10.1/lib/scala-library.jar"
+      )
+      :test-deps (
+        "/Users/jast/.sbt/boot/scala-2.10.1/lib/scala-library.jar"
+        "/Users/jast/.ivy2/cache/org.scalatest/scalatest_2.10/jars/scalatest_2.10-2.0.M5b.jar"
+      )
+      :source-roots (
+        "/Users/jast/Documents/workspace-fun/MitJustinBot/src/main/scala"
+        "/Users/jast/Documents/workspace-fun/MitJustinBot/src/main/java"
+        "/Users/jast/Documents/workspace-fun/MitJustinBot/target/src_managed/main"
+        "/Users/jast/Documents/workspace-fun/MitJustinBot/src/test/scala"
+        "/Users/jast/Documents/workspace-fun/MitJustinBot/src/test/java"
+        "/Users/jast/Documents/workspace-fun/MitJustinBot/target/src_managed/test"
+      )
+      :target "/Users/jast/Documents/workspace-fun/MitJustinBot/target/classes"
+      :test-target "/Users/jast/Documents/workspace-fun/MitJustinBot/target/test-classes"
+    )
+  )
+)
