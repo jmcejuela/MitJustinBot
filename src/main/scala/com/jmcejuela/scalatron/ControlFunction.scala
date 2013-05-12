@@ -131,7 +131,7 @@ trait Action {
   override def toString: String
 }
 
-// evil reference cheat
+//-------------------------------------------------------------------------
 
 case class XY(x: Int, y: Int) {
   override def toString = x+":"+y
@@ -272,7 +272,7 @@ object Direction90 {
   val Down = 3
 }
 
-// -------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------
 
 case class View(cells: String) {
   val size = math.sqrt(cells.length).toInt
