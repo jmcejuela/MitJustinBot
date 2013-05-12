@@ -1,6 +1,6 @@
-package com.jmcejuela.scalatron
-
 import scala.util.Random
+import scala.Array.canBuildFrom
+import scala.Option.option2Iterable
 
 class ControlFunctionFactory {
   def create: String => String = input => {
