@@ -76,9 +76,9 @@ object Cell {
 }
 
 object CommandParser {
-  val react = """(\w+)\((.+)\)""".r
+  val opcodeCommand = """(\w+)\((.+)\)""".r
   def apply(command: String): (String, Map[String, String]) = {
-    val react(opcode, params) = command
+    val opcodeCommand(opcode, params) = command
     (opcode,
       (for {
         p <- params split ','
