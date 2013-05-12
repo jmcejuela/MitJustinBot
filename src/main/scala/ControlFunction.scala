@@ -1,6 +1,7 @@
 import scala.util.Random
 import scala.Array.canBuildFrom
 import scala.Option.option2Iterable
+import scala.collection.mutable.ListBuffer
 
 class ControlFunctionFactory {
   def create: String => String = input => {
@@ -10,7 +11,6 @@ class ControlFunctionFactory {
         case "0" => MasterBot(params)
         case _   => Missile(params)
       }).toString
-
     }
     else "" //OK
   }
@@ -18,28 +18,35 @@ class ControlFunctionFactory {
 
 object MasterBot extends BotRespond {
 
+  val MINIMUM_ENERGY_TO_SPAWN = 100
+
   def apply(params: Map[String, String]): Action = {
     import Cell._
     val view = View(params("view"))
+
+    val actionsBuilder = new MultiActionBuilder()
 
     val targets = (for {
       target <- List(Plant, Fluppet)
       offset <- view.offsetToNearest(target)
     } yield offset)
 
-    val move = (
+    val move = Move(
       if (targets.isEmpty) view.randomAdjacent(Empty).getOrElse(XY.random)
       else {
         val nearestTarget = targets.minBy { _.distanceTo(XY.Zero) }
         val pref = nearestTarget.signum
-        val dir = view.cellAtRelPos(pref) match {
+        view.cellAtRelPos(pref) match {
           case Wall | Enemy | Poison | Snorg => view.randomAdjacent(Empty).getOrElse(XY.random)
           case _                             => pref.signum
         }
-        Move(dir)
       })
-    if (view.nearby(Set(Enemy, Snorg), 2).isEmpty) move
-    else MultiAction(move, Spawn(view.randomAdjacent(Empty).getOrElse(XY.Zero), "missile", 100))
+    actionsBuilder.add(move)
+
+    if (!view.nearby(Set(Enemy, Snorg), 2).isEmpty && params("energy").toInt >= MINIMUM_ENERGY_TO_SPAWN)
+      actionsBuilder.add(Spawn(view.randomAdjacent(Empty).getOrElse(XY.Zero), "missile", MINIMUM_ENERGY_TO_SPAWN))
+
+    actionsBuilder.create
   }
 }
 
@@ -120,6 +127,12 @@ case class SetState(state: State) extends Action {
 
 case class MultiAction(actions: Action*) extends Action {
   override def toString = actions.mkString("|")
+}
+
+class MultiActionBuilder() {
+  val actions: ListBuffer[Action] = ListBuffer()
+  def add(action: Action) = actions += action
+  def create = MultiAction(actions: _*)
 }
 
 trait Action {
