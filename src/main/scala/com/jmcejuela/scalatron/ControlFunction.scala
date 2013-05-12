@@ -5,12 +5,12 @@ object MasterBot extends BotRespond {
 }
 
 object CommandParser {
-  val react = """React(.+)""".r
+  val react = """(\w+)(.+)""".r
   def apply(command: String) = {
-    val react(v) = command
-    ("React",
+    val react(opcode,params) = command
+    (opcode,
       (for {
-       p <- v split ','
+       p <- params split ','
        Array(name,value) = p split '='
     } yield (name,value) ) toMap)
   } 
