@@ -2,6 +2,22 @@ package com.jmcejuela.scalatron
 
 import scala.util.Random
 
+class ControlFunctionFactory {
+  def create: String => String = input => {
+    val (opcode,params) = CommandParser(input)
+    if (opcode == "React") {
+        (params("generation") match {
+                    case "0" => MasterBot(params)
+                    case _ => Missile(params)
+                }).toString
+        
+    }
+    else "Status(boring!)"
+     Log(params.keys.mkString(",")).toString
+  }
+    
+}
+
 object MasterBot extends BotRespond {
 
   def apply(params:Map[String,String]): Action = {
@@ -74,22 +90,6 @@ object CommandParser {
 trait Bot
 
 trait BotRespond extends Function1[Map[String,String], Action]
-
-class ControlFunctionFactory {
-  def create: String=>String = input => {
-    val (opcode,params) = CommandParser(input)
-    if (opcode == "React") {
-        (params("generation") match {
-                    case "0" => MasterBot(params)
-                    case _ => Missile(params)
-                }).toString
-        
-    }
-    else "Status(boring!)"
-    // Log(params.keys.mkString(",")).toString
-  }
-    
-}
 
 case class Move(direction: XY) extends Action {
     override def toString = "Move(direction="+direction+")"
