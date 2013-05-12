@@ -4,49 +4,47 @@ import scala.Option.option2Iterable
 
 class ControlFunctionFactory {
   def create: String => String = input => {
-    val (opcode,params) = CommandParser(input)
+    val (opcode, params) = CommandParser(input)
     if (opcode == "React") {
-        (params("generation") match {
-                    case "0" => MasterBot(params)
-                    case _ => Missile(params)
-                }).toString
-        
+      (params("generation") match {
+        case "0" => MasterBot(params)
+        case _   => Missile(params)
+      }).toString
+
     }
     else "" //OK
   }
-    
 }
 
 object MasterBot extends BotRespond {
 
-  def apply(params:Map[String,String]): Action = {
+  def apply(params: Map[String, String]): Action = {
     import Cell._
     val view = View(params("view"))
-  
-    val targets = (for {
-            target <- List(Plant, Fluppet)
-            offset <- view.offsetToNearest(target)
-        } yield offset)
 
-        val move = (
-        if (targets.isEmpty) Move(XY.random)
-        else {
-            val nearestTarget = targets.minBy {_.distanceTo(XY.Zero)}
-            val pref = nearestTarget.signum
-            val dir = view.cellAtRelPos(pref) match {
-                case Wall|Enemy|Poison|Snorg => view.randomAdjacent(Empty).getOrElse(XY.random)
-                case _ => pref.signum
-            }
-            Move(dir)
+    val targets = (for {
+      target <- List(Plant, Fluppet)
+      offset <- view.offsetToNearest(target)
+    } yield offset)
+
+    val move = (
+      if (targets.isEmpty) Move(XY.random)
+      else {
+        val nearestTarget = targets.minBy { _.distanceTo(XY.Zero) }
+        val pref = nearestTarget.signum
+        val dir = view.cellAtRelPos(pref) match {
+          case Wall | Enemy | Poison | Snorg => view.randomAdjacent(Empty).getOrElse(XY.random)
+          case _                             => pref.signum
         }
-     )
-     if (view.nearby(Set(Enemy, Snorg), 2).isEmpty) move
-     else MultiAction(move, Spawn(view.randomAdjacent(Empty).getOrElse(XY.Zero), "missile", 100))
+        Move(dir)
+      })
+    if (view.nearby(Set(Enemy, Snorg), 2).isEmpty) move
+    else MultiAction(move, Spawn(view.randomAdjacent(Empty).getOrElse(XY.Zero), "missile", 100))
   }
 }
 
 object Missile extends BotRespond {
-    def apply(params:Map[String,String]): Action = Explode(2)
+  def apply(params: Map[String, String]): Action = Explode(2)
 }
 
 object Cell {
@@ -65,11 +63,11 @@ object Cell {
   /** Mini-bot (=slave; enemy's, not yours) */
   val EnemyChild = 's'
   /** Zugar (=good plant, food) */
-  val Plant = 'P' 
+  val Plant = 'P'
   /** Toxifera (=bad plant, poisonous) */
-  val Poison = 'p' 
+  val Poison = 'p'
   /** Fluppet (=good beast, food animal) */
-  val Fluppet = 'B' 
+  val Fluppet = 'B'
   /** (=bad beast, predator) */
   val Snorg = 'b' // Predator
 }
@@ -88,26 +86,26 @@ object CommandParser {
 
 trait Bot
 
-trait BotRespond extends Function1[Map[String,String], Action]
+trait BotRespond extends Function1[Map[String, String], Action]
 
 case class Move(direction: XY) extends Action {
-    override def toString = "Move(direction="+direction+")"
+  override def toString = "Move(direction="+direction+")"
 }
 
-case class Explode(radius:Int = 2) extends Action {
-    override def toString = "Explode(size="+radius+")"
+case class Explode(radius: Int = 2) extends Action {
+  override def toString = "Explode(size="+radius+")"
 }
 
 case class Spawn(direction: XY, name: String, energy: Int) extends Action {
-    override def toString = "Spawn(direction="+direction+",name="+name+",energy="+energy+")"
+  override def toString = "Spawn(direction="+direction+",name="+name+",energy="+energy+")"
 }
 
 case class Log(msg: String) extends Action {
-    override def toString = "Log(text="+msg+")"
+  override def toString = "Log(text="+msg+")"
 }
 
 case class Say(msg: String) extends Action {
-    override def toString = "Say(text="+msg+")"
+  override def toString = "Say(text="+msg+")"
 }
 
 case class Status(msg: String) extends Action {
@@ -121,7 +119,7 @@ case class SetState(state: State) extends Action {
 }
 
 case class MultiAction(actions: Action*) extends Action {
-    override def toString = actions.mkString("|")
+  override def toString = actions.mkString("|")
 }
 
 trait Action {
@@ -300,7 +298,7 @@ case class View(cells: String) {
   def adjacent(c: Char): List[XY] =
     for { rel <- XY.AdjacentMatrix if cells(indexFromRelPos(rel)) == c } yield rel
 
-  def randomAdjacent(c:Char): Option[XY] = {
+  def randomAdjacent(c: Char): Option[XY] = {
     val adj = adjacent(c)
     if (adj.isEmpty) None
     else Some(adj(Random.nextInt(adj.size)))
@@ -308,9 +306,9 @@ case class View(cells: String) {
 
   def nearby(c: Set[Char], distance: Int) = {
     for {
-        x <- -distance to distance
-        y <- -distance to distance
-        coord = XY(x,y) if c contains cellAtRelPos(coord)
+      x <- -distance to distance
+      y <- -distance to distance
+      coord = XY(x, y) if c contains cellAtRelPos(coord)
     } yield coord
   }
 
