@@ -3,20 +3,67 @@ package com.jmcejuela.scalatron
 import scala.util.Random
 
 object MasterBot extends BotRespond {
-  def apply(input: String) = {
-    val (opcode, params) = CommandParser(input)
-    if (opcode == "React") {
-      val view = View(params("cells"))
-      view.offsetToNearest('P') match {
-        case None               => Move(XY.random).toString
-        case Some(nearestPlant) => Move(nearestPlant.signum).toString
-      }
-    }
-    else {
-      ""
-    }
+
+  def apply(params:Map[String,String]): Action = {
+    import Cell._
+    val view = View(params("view"))
+  
+    val targets = (for {
+            target <- List(Plant, Fluppet)
+            offset <- view.offsetToNearest(target)
+        } yield offset)
+
+        val move = (
+        if (targets.isEmpty) Move(XY.random)
+        else {
+            val nearestTarget = targets.minBy {_.distanceTo(XY.Zero)}
+            val pref = nearestTarget.signum
+            val dir = view.cellAtRelPos(pref) match {
+                case Wall|Enemy|Poison|Snork => view.randomAdjacent(Empty).getOrElse(XY.random)
+                case _ => pref.signum
+            }
+            Move(dir)
+        }
+     )
+     if (view.nearby(Set(Enemy, Snork), 2).isEmpty) move
+     else MultiAction(move, Spawn(view.randomAdjacent(Empty).getOrElse(XY.Zero), "missile", 100))
   }
 }
+
+object Missile extends BotRespond {
+    def apply(params:Map[String,String]): Action = MultiAction(Say("boom"),Explode(2))
+}
+
+
+
+// “?” cell whose content is occluded by a wall
+// “_” empty cell
+// “W” wall
+// “M” Bot (=master; yours, always in the center unless seen by a slave)
+// “m” Bot (=master; enemy, not you)
+// “S” Mini-bot (=slave, yours)
+// “s” Mini-bot (=slave; enemy's, not yours)
+// “P” Zugar (=good plant, food)
+// “p” Toxifera (=bad plant, poisonous)
+// “B” Fluppet (=good beast, food)
+// “b” Snorg (=bad beast, predator)
+object Cell {
+    val Occluded = '?'
+    val Empty = '_'
+    val Wall = 'W'
+    val Me = 'M'
+    val Enemy = 'm'
+    val Child = 'S'
+    val EnemyChild = 's'
+    val Plant = 'P' // Zugar
+    val Poison = 'p' // toxifera
+    val Fluppet = 'B' // food animal
+    val Snork = 'b' // predator
+}
+
+// case class State(lastDirection: ) {
+//     val 
+// }
 
 object CommandParser {
   val react = """(\w+)(.+)""".r
@@ -32,20 +79,50 @@ object CommandParser {
 
 trait Bot
 
-trait BotRespond extends Function1[String, String]
+trait BotRespond extends Function1[Map[String,String], Action]
 
 class ControlFunctionFactory {
-  def create = MasterBot //new ControlFunction().respond _
+  def create: String=>String = input => {
+    val (opcode,params) = CommandParser(input)
+    if (opcode == "React") {
+        (params("generation") match {
+                    case "0" => MasterBot(params)
+                    case _ => Missile(params)
+                }).toString
+        
+    }
+    else "Status(boring!)"
+    // Log(params.keys.mkString(",")).toString
+  }
+    
 }
 
-case class Move(direction: XY) extends Action
+case class Move(direction: XY) extends Action {
+    override def toString = "Move(direction="+direction+")"
+}
+
+case class Explode(radius:Int = 2) extends Action {
+    override def toString = "Explode(size="+radius+")"
+}
+
+case class Spawn(direction: XY, name: String, energy: Int) extends Action {
+    override def toString = "Spawn(direction="+direction+",name="+name+",energy="+energy+")"
+}
+
+case class Log(msg: String) extends Action {
+    override def toString = "Log(text="+msg+")"
+}
+
+case class Say(msg: String) extends Action {
+    override def toString = "Say(text="+msg+")"
+}
+
+case class MultiAction(actions: Action*) extends Action {
+    override def toString = actions.mkString("|")
+}
 
 trait Action {
   override def toString: String
-}
-
-object Action {
-  def apply(action: Action*) = action.mkString("|")
 }
 
 // evil reference cheat
@@ -146,6 +223,8 @@ object XY {
   val Down = XY(0, 1)
   val DownRight = XY(1, 1)
 
+  val AdjacentMatrix = List(Right, RightUp, Up, UpLeft, Left, LeftDown, Down, DownRight)
+
   def random: XY = XY(Random.nextInt(3) - 1, Random.nextInt(3) - 1)
 
   def fromDirection45(index: Int): XY = index match {
@@ -200,10 +279,10 @@ case class View(cells: String) {
   def absPosFromRelPos(relPos: XY) = relPos + center
   def cellAtAbsPos(absPos: XY) = cells.charAt(indexFromAbsPos(absPos))
 
-  def indexFromRelPos(relPos: XY) = indexFromAbsPos(absPosFromRelPos(relPos))
+  def indexFromRelPos(relPos: XY): Int = indexFromAbsPos(absPosFromRelPos(relPos))
   def relPosFromAbsPos(absPos: XY) = absPos - center
   def relPosFromIndex(index: Int) = relPosFromAbsPos(absPosFromIndex(index))
-  def cellAtRelPos(relPos: XY) = cells.charAt(indexFromRelPos(relPos))
+  def cellAtRelPos(relPos: XY): Char = cells.charAt(indexFromRelPos(relPos))
 
   def offsetToNearest(c: Char) = {
     val matchingXY = cells.view.zipWithIndex.filter(_._1 == c)
@@ -214,4 +293,25 @@ case class View(cells: String) {
       Some(nearest)
     }
   }
+
+  def adjacent(c: Char): List[XY] =
+    for { rel <- XY.AdjacentMatrix if cells(indexFromRelPos(rel)) == c } yield rel
+
+  def randomAdjacent(c:Char): Option[XY] = {
+    val adj = adjacent(c)
+    if (adj.isEmpty) None
+    else Some(adj(Random.nextInt(adj.size)))
+  }
+
+  def nearby(c: Set[Char], distance: Int) = {
+    for {
+        x <- -distance to distance
+        y <- -distance to distance
+        coord = XY(x,y) if c contains cellAtRelPos(coord)
+    } yield coord
+  }
+
+
+
+
 }
