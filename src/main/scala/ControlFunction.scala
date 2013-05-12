@@ -170,49 +170,6 @@ case class XY(x: Int, y: Int) {
   def negateX = XY(-x, y)
   def negateY = XY(x, -y)
 
-  /** Returns the direction index with 'Right' being index 0, then clockwise in 45 degree steps. */
-  def toDirection45: Int = {
-    val unit = signum
-    unit.x match {
-      case -1 =>
-        unit.y match {
-          case -1 =>
-            if (x < y * 3) Direction45.Left
-            else if (y < x * 3) Direction45.Up
-            else Direction45.UpLeft
-          case 0 =>
-            Direction45.Left
-          case 1 =>
-            if (-x > y * 3) Direction45.Left
-            else if (y > -x * 3) Direction45.Down
-            else Direction45.LeftDown
-        }
-      case 0 =>
-        unit.y match {
-          case 1  => Direction45.Down
-          case 0  => throw new IllegalArgumentException("cannot compute direction index for (0,0)")
-          case -1 => Direction45.Up
-        }
-      case 1 =>
-        unit.y match {
-          case -1 =>
-            if (x > -y * 3) Direction45.Right
-            else if (-y > x * 3) Direction45.Up
-            else Direction45.RightUp
-          case 0 =>
-            Direction45.Right
-          case 1 =>
-            if (x > y * 3) Direction45.Right
-            else if (y > x * 3) Direction45.Down
-            else Direction45.DownRight
-        }
-    }
-  }
-
-  def rotateCounterClockwise45 = XY.fromDirection45((signum.toDirection45 + 1) % 8)
-  def rotateCounterClockwise90 = XY.fromDirection45((signum.toDirection45 + 2) % 8)
-  def rotateClockwise45 = XY.fromDirection45((signum.toDirection45 + 7) % 8)
-  def rotateClockwise90 = XY.fromDirection45((signum.toDirection45 + 6) % 8)
 
   def wrap(boardSize: XY) = {
     val fixedX = if (x < 0) boardSize.x + x else if (x >= boardSize.x) x - boardSize.x else x
@@ -240,44 +197,7 @@ object XY {
   val AdjacentMatrix = List(Right, RightUp, Up, UpLeft, Left, LeftDown, Down, DownRight)
 
   def random: XY = XY(Random.nextInt(3) - 1, Random.nextInt(3) - 1)
-
-  def fromDirection45(index: Int): XY = index match {
-    case Direction45.Right     => Right
-    case Direction45.RightUp   => RightUp
-    case Direction45.Up        => Up
-    case Direction45.UpLeft    => UpLeft
-    case Direction45.Left      => Left
-    case Direction45.LeftDown  => LeftDown
-    case Direction45.Down      => Down
-    case Direction45.DownRight => DownRight
-  }
-
-  def fromDirection90(index: Int): XY = index match {
-    case Direction90.Right => Right
-    case Direction90.Up    => Up
-    case Direction90.Left  => Left
-    case Direction90.Down  => Down
-  }
-
   def apply(array: Array[Int]): XY = XY(array(0), array(1))
-}
-
-object Direction45 {
-  val Right = 0
-  val RightUp = 1
-  val Up = 2
-  val UpLeft = 3
-  val Left = 4
-  val LeftDown = 5
-  val Down = 6
-  val DownRight = 7
-}
-
-object Direction90 {
-  val Right = 0
-  val Up = 1
-  val Left = 2
-  val Down = 3
 }
 
 //-------------------------------------------------------------------------
