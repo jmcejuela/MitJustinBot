@@ -24,23 +24,6 @@ class ControlFunctionFactory {
   def create = MasterBot//new ControlFunction().respond _
 }
 
-type Coord = (Int,Int)
-
-object Direction {
-  val zero = (0,0)
-  val l = (-1,0)
-  val r = (1,0)
-  val u = (0,1)
-  val d = (0,-1)
-  val lu = (-1,1)
-  val ru = (1,1)
-  val ld = (-1,-1)
-  val rd = (1,-1)
-
-  def apply(c: Coord) = c match {
-    (x,y) =>  
-  }
-}
 
 trait Action {
   override def toString: String
@@ -49,7 +32,6 @@ trait Action {
 object Action {
   def apply(action: Action*) = action.mkString("|")
 }
-
 
 
 // evil reference cheat
