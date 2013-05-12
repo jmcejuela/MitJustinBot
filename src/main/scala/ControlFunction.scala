@@ -43,7 +43,7 @@ object MasterBot extends BotRespond {
       })
     actionsBuilder.add(move)
 
-    if (!view.nearby(Set(Enemy, Snorg), 2).isEmpty && params("energy").toInt >= MINIMUM_ENERGY_TO_SPAWN)
+    if (!view.nearby(Set(Enemy, EnemyChild, Snorg), 2).isEmpty && params("energy").toInt >= MINIMUM_ENERGY_TO_SPAWN)
       actionsBuilder.add(Spawn(view.randomAdjacent(Empty).getOrElse(XY.Zero), "missile", MINIMUM_ENERGY_TO_SPAWN))
 
     actionsBuilder.create
