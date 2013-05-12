@@ -315,7 +315,4 @@ case class View(cells: String) {
     } yield coord
   }
 
-
-
-
 }
