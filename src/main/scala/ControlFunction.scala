@@ -28,7 +28,7 @@ object MasterBot extends BotRespond {
     } yield offset)
 
     val move = (
-      if (targets.isEmpty) Move(XY.random)
+      if (targets.isEmpty) view.randomAdjacent(Empty).getOrElse(XY.random)
       else {
         val nearestTarget = targets.minBy { _.distanceTo(XY.Zero) }
         val pref = nearestTarget.signum
