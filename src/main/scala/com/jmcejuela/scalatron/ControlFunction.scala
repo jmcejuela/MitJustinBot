@@ -7,12 +7,12 @@ object MasterBot extends BotRespond {
 object CommandParser {
   val react = """React(.+)""".r
   def apply(command: String) = {
-    val react(v) = input
-    ("React"
+    val react(v) = command
+    ("React",
       (for {
        p <- v split ','
        Array(name,value) = p split '='
-    } yield (name,value) ) toMap
+    } yield (name,value) ) toMap)
   } 
 }
 
@@ -153,4 +153,55 @@ object XY {
     }
 
     def apply(array: Array[Int]): XY = XY(array(0), array(1))
+}
+
+
+object Direction45 {
+    val Right = 0
+    val RightUp = 1
+    val Up = 2
+    val UpLeft = 3
+    val Left = 4
+    val LeftDown = 5
+    val Down = 6
+    val DownRight = 7
+}
+
+
+object Direction90 {
+    val Right = 0
+    val Up = 1
+    val Left = 2
+    val Down = 3
+}
+
+
+// -------------------------------------------------------------------------------------------------
+
+
+case class View(cells: String) {
+    val size = math.sqrt(cells.length).toInt
+    val center = XY(size / 2, size / 2)
+
+    def apply(relPos: XY) = cellAtRelPos(relPos)
+
+    def indexFromAbsPos(absPos: XY) = absPos.x + absPos.y * size
+    def absPosFromIndex(index: Int) = XY(index % size, index / size)
+    def absPosFromRelPos(relPos: XY) = relPos + center
+    def cellAtAbsPos(absPos: XY) = cells.charAt(indexFromAbsPos(absPos))
+
+    def indexFromRelPos(relPos: XY) = indexFromAbsPos(absPosFromRelPos(relPos))
+    def relPosFromAbsPos(absPos: XY) = absPos - center
+    def relPosFromIndex(index: Int) = relPosFromAbsPos(absPosFromIndex(index))
+    def cellAtRelPos(relPos: XY) = cells.charAt(indexFromRelPos(relPos))
+
+    def offsetToNearest(c: Char) = {
+        val matchingXY = cells.view.zipWithIndex.filter(_._1 == c)
+        if( matchingXY.isEmpty )
+            None
+        else {
+            val nearest = matchingXY.map(p => relPosFromIndex(p._2)).minBy(_.length)
+            Some(nearest)
+        }
+    }
 }
