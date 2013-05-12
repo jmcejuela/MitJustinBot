@@ -117,6 +117,10 @@ case class Say(msg: String) extends Action {
     override def toString = "Say(text="+msg+")"
 }
 
+case class Status(msg: String) extends Action {
+  override def toString = "Status(text="+msg+")"
+}
+
 case class MultiAction(actions: Action*) extends Action {
     override def toString = actions.mkString("|")
 }
