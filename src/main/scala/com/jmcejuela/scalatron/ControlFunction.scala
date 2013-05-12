@@ -13,17 +13,17 @@ object MasterBot extends BotRespond {
             offset <- view.offsetToNearest(target)
         } yield offset)
 
-        val move = (
-        if (targets.isEmpty) Move(XY.random)
-        else {
-            val nearestTarget = targets.minBy {_.distanceTo(XY.Zero)}
-            val pref = nearestTarget.signum
-            val dir = view.cellAtRelPos(pref) match {
-                case Wall|Enemy|Poison|Snork => view.randomAdjacent(Empty).getOrElse(XY.random)
-                case _ => pref.signum
-            }
-            Move(dir)
+    val move = (
+    if (targets.isEmpty) Move(XY.random)
+    else {
+        val nearestTarget = targets.minBy {_.distanceTo(XY.Zero)}
+        val pref = nearestTarget.signum
+        val dir = view.cellAtRelPos(pref) match {
+            case Wall|Enemy|Poison|Snork => view.randomAdjacent(Empty).getOrElse(XY.random)
+            case _ => pref.signum
         }
+        Move(dir)
+    }
      )
      if (view.nearby(Set(Enemy, Snork), 2).isEmpty) move
      else MultiAction(move, Spawn(view.randomAdjacent(Empty).getOrElse(XY.Zero), "missile", 100))
