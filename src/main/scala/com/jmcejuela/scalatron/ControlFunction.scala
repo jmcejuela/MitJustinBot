@@ -117,8 +117,8 @@ case class Status(msg: String) extends Action {
 
 case class State()
 
-case class Set(state: State) extends Action {
-  override def toString = ???
+case class SetState(state: State) extends Action {
+  override def toString = "Set()"
 }
 
 case class MultiAction(actions: Action*) extends Action {
