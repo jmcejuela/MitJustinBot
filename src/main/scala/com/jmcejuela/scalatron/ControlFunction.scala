@@ -19,13 +19,13 @@ object MasterBot extends BotRespond {
             val nearestTarget = targets.minBy {_.distanceTo(XY.Zero)}
             val pref = nearestTarget.signum
             val dir = view.cellAtRelPos(pref) match {
-                case Wall|Enemy|Poison|Snork => view.randomAdjacent(Empty).getOrElse(XY.random)
+                case Wall|Enemy|Poison|Snorg => view.randomAdjacent(Empty).getOrElse(XY.random)
                 case _ => pref.signum
             }
             Move(dir)
         }
      )
-     if (view.nearby(Set(Enemy, Snork), 2).isEmpty) move
+     if (view.nearby(Set(Enemy, Snorg), 2).isEmpty) move
      else MultiAction(move, Spawn(view.randomAdjacent(Empty).getOrElse(XY.Zero), "missile", 100))
   }
 }
@@ -34,31 +34,29 @@ object Missile extends BotRespond {
     def apply(params:Map[String,String]): Action = Explode(2)
 }
 
-
-
-// “?” cell whose content is occluded by a wall
-// “_” empty cell
-// “W” wall
-// “M” Bot (=master; yours, always in the center unless seen by a slave)
-// “m” Bot (=master; enemy, not you)
-// “S” Mini-bot (=slave, yours)
-// “s” Mini-bot (=slave; enemy's, not yours)
-// “P” Zugar (=good plant, food)
-// “p” Toxifera (=bad plant, poisonous)
-// “B” Fluppet (=good beast, food)
-// “b” Snorg (=bad beast, predator)
 object Cell {
-    val Occluded = '?'
-    val Empty = '_'
-    val Wall = 'W'
-    val Me = 'M'
-    val Enemy = 'm'
-    val Child = 'S'
-    val EnemyChild = 's'
-    val Plant = 'P' // Zugar
-    val Poison = 'p' // toxifera
-    val Fluppet = 'B' // food animal
-    val Snork = 'b' // predator
+  /** Cell whose content is occluded by a wall */
+  val Occluded = '?'
+  /** empty cell */
+  val Empty = '_'
+  /** Wall */
+  val Wall = 'W'
+  /** Bot (=master; yours, always in the center unless seen by a slave) */
+  val Me = 'M'
+  /** Bot (=master; enemy, not you) */
+  val Enemy = 'm'
+  /** Mini-bot (=slave, yours) */
+  val Child = 'S'
+  /** Mini-bot (=slave; enemy's, not yours) */
+  val EnemyChild = 's'
+  /** Zugar (=good plant, food) */
+  val Plant = 'P' 
+  /** Toxifera (=bad plant, poisonous) */
+  val Poison = 'p' 
+  /** Fluppet (=good beast, food animal) */
+  val Fluppet = 'B' 
+  /** (=bad beast, predator) */
+  val Snorg = 'b' // Predator
 }
 
 object CommandParser {
