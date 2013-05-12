@@ -12,8 +12,7 @@ class ControlFunctionFactory {
                 }).toString
         
     }
-    else "Status(boring!)"
-     Log(params.keys.mkString(",")).toString
+    else "" //OK
   }
     
 }
