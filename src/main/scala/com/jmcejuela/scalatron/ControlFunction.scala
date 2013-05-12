@@ -61,10 +61,6 @@ object Cell {
     val Snork = 'b' // predator
 }
 
-// case class State(lastDirection: ) {
-//     val 
-// }
-
 object CommandParser {
   val react = """(\w+)\((.+)\)""".r
   def apply(command: String): (String, Map[String, String]) = {
@@ -119,6 +115,12 @@ case class Say(msg: String) extends Action {
 
 case class Status(msg: String) extends Action {
   override def toString = "Status(text="+msg+")"
+}
+
+case class State()
+
+case class Set(state: State) extends Action {
+  override def toString = ???
 }
 
 case class MultiAction(actions: Action*) extends Action {
