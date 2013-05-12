@@ -31,7 +31,7 @@ object MasterBot extends BotRespond {
 }
 
 object Missile extends BotRespond {
-    def apply(params:Map[String,String]): Action = MultiAction(Say("boom"),Explode(2))
+    def apply(params:Map[String,String]): Action = Explode(2)
 }
 
 
