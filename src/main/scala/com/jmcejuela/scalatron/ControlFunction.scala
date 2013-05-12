@@ -1,7 +1,7 @@
 package com.jmcejuela.scalatron
 
-class ControlFunction {
-  def respond(input: String) = ""
+object MasterBot extends BotRespond {
+  def apply(input: String) = ""
 }
 
 object CommandParser {
@@ -16,8 +16,12 @@ object CommandParser {
   } 
 }
 
+trait Bot
+
+trait BotRespond extends Function1[String, String]
+
 class ControlFunctionFactory {
-  def create = new ControlFunction().respond _
+  def create = MasterBot//new ControlFunction().respond _
 }
 
 type Coord = (Int,Int)
